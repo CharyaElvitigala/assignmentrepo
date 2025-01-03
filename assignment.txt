@@ -1,0 +1,82 @@
+import piplite
+await piplite.install(['numpy','pandas'])
+await piplite.install(['seaborn'])
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import scipy.stats as stats
+import statsmodels.api as sm
+from statsmodels.formula.api import ols
+
+# Load the Boston Housing dataset
+url = 'https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBMDeveloperSkillsNetwork-ST0151EN-SkillsNetwork/labs/boston_housing.csv'
+boston_df = pd.read_csv(url)
+
+# Task 1: Familiarize with dataset
+print(boston_df.info())
+print(boston_df.describe())
+
+# Task 2: Generate Descriptive Statistics and Visualizations
+
+# 2.1 Boxplot for MEDV
+plt.figure(figsize=(8, 6))
+sns.boxplot(y='MEDV', data=boston_df)
+plt.title('Boxplot of Median Value of Owner-Occupied Homes (MEDV)')
+plt.ylabel('MEDV')
+plt.show()
+
+# 2.2 Bar plot for CHAS
+plt.figure(figsize=(8, 6))
+sns.countplot(x='CHAS', data=boston_df)
+plt.title('Bar Plot of Charles River Variable (CHAS)')
+plt.xlabel('CHAS (1 = Yes, 0 = No)')
+plt.ylabel('Count')
+plt.show()
+
+# 2.3 Boxplot for MEDV vs. AGE groups
+boston_df['AGE_group'] = pd.cut(boston_df['AGE'], bins=[0, 35, 70, 100], labels=['<=35', '36-70', '>=71'])
+plt.figure(figsize=(8, 6))
+sns.boxplot(x='AGE_group', y='MEDV', data=boston_df)
+plt.title('Boxplot of MEDV by AGE Groups')
+plt.xlabel('Age Group')
+plt.ylabel('MEDV')
+plt.show()
+
+# 2.4 Scatter plot for NOX vs. INDUS
+plt.figure(figsize=(8, 6))
+sns.scatterplot(x='INDUS', y='NOX', data=boston_df)
+plt.title('Scatter Plot of NOX vs. INDUS')
+plt.xlabel('Proportion of Industrial Acres (INDUS)')
+plt.ylabel('Nitric Oxides Concentration (NOX)')
+plt.show()
+
+# 2.5 Histogram for PTRATIO
+plt.figure(figsize=(8, 6))
+sns.histplot(boston_df['PTRATIO'], bins=10, kde=True)
+plt.title('Histogram of Pupil-Teacher Ratio (PTRATIO)')
+plt.xlabel('PTRATIO')
+plt.ylabel('Frequency')
+plt.show()
+
+# Task 3: Conduct Statistical Tests
+
+# 3.1 T-test for CHAS
+chas_1 = boston_df[boston_df['CHAS'] == 1]['MEDV']
+chas_0 = boston_df[boston_df['CHAS'] == 0]['MEDV']
+t_stat, p_value = stats.ttest_ind(chas_1, chas_0)
+print(f"T-Test Results for CHAS:\nT-Statistic: {t_stat}, P-Value: {p_value}")
+
+# 3.2 ANOVA for AGE Groups
+anova_model = ols('MEDV ~ AGE_group', data=boston_df).fit()
+anova_table = sm.stats.anova_lm(anova_model, typ=2)
+print("ANOVA Results:\n", anova_table)
+
+# 3.3 Pearson Correlation for NOX and INDUS
+correlation, p_val_corr = stats.pearsonr(boston_df['NOX'], boston_df['INDUS'])
+print(f"Pearson Correlation Results for NOX and INDUS:\nCorrelation: {correlation}, P-Value: {p_val_corr}")
+
+# 3.4 Regression Analysis for DIS and MEDV
+reg_model = ols('MEDV ~ DIS', data=boston_df).fit()
+print(reg_model.summary())
